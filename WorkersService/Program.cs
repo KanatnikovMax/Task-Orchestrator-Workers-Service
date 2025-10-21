@@ -15,13 +15,13 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 
 // Для демонстрации
-app.MapGet("/", async () =>
+app.MapGet("/{id}", async (string id = "1") =>
 {
     var scope = app.Services.CreateScope();
 
     var worker = scope.ServiceProvider.GetRequiredService<TaskWorker>();
 
-    await worker.ProcessTaskAsync(Guid.NewGuid().ToString());
+    await worker.ProcessTaskAsync(id);
 });
 
 app.Run();
