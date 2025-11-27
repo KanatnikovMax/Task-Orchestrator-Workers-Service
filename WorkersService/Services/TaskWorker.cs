@@ -10,21 +10,19 @@ public class TaskWorker(WorkerProgressNotifier progressNotifier, ILogger<TaskWor
             
             await progressNotifier.NotifyProgressAsync(taskId, 0);
             
-            await Task.Delay(5000);
+            await Task.Delay(7000);
             await progressNotifier.NotifyProgressAsync(taskId, 25);
             
-            await Task.Delay(5000);
+            await Task.Delay(7000);
             await progressNotifier.NotifyProgressAsync(taskId, 50);
             
-            await Task.Delay(5000);
+            await Task.Delay(7000);
             await progressNotifier.NotifyProgressAsync(taskId, 75);
             
-            await Task.Delay(5000);
+            await Task.Delay(7000);
             await progressNotifier.NotifyProgressAsync(taskId, 100);
             
             logger.LogInformation("Task {TaskId} completed successfully", taskId);
-            
-            await progressNotifier.StopAsync();
         }
         catch (Exception ex)
         {
