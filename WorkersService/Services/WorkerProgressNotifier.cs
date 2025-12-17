@@ -23,13 +23,13 @@ public class WorkerProgressNotifier : IAsyncDisposable
             .Build();
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (_started) return;
 
         try
         {
-            await _hubConnection.StartAsync();
+            await _hubConnection.StartAsync(cancellationToken);
             _logger.LogInformation("Connected to Gateway SignalR hub");
             _started = true;
         }
@@ -39,29 +39,13 @@ public class WorkerProgressNotifier : IAsyncDisposable
         }
     }
 
-    public async Task StopAsync()
-    {
-        if (!_started) return;
-
-        try
-        {
-            await _hubConnection.StopAsync();
-            _logger.LogInformation("Disconnected from Gateway SignalR hub");
-            _started = false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to disconnect from Gateway SignalR hub");
-        }
-    }
-
-    public async Task NotifyProgressAsync(string taskId, int progress)
+    public async Task NotifyProgressAsync(string taskId, int progress, CancellationToken cancellationToken)
     {
         try
         {
             if (_hubConnection.State == HubConnectionState.Connected)
             {
-                await _hubConnection.InvokeAsync("UpdateWorkerTaskProgress", taskId, progress);
+                await _hubConnection.InvokeAsync("UpdateWorkerTaskProgress", taskId, progress, cancellationToken);
                 _logger.LogDebug("Progress updated for task {TaskId}: {Progress}%", taskId, progress);
             }
             else
@@ -90,6 +74,22 @@ public class WorkerProgressNotifier : IAsyncDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error disposing WorkerProgressNotifier");
+        }
+    }
+    
+    private async Task StopAsync()
+    {
+        if (!_started) return;
+
+        try
+        {
+            await _hubConnection.StopAsync();
+            _logger.LogInformation("Disconnected from Gateway SignalR hub");
+            _started = false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to disconnect from Gateway SignalR hub");
         }
     }
 }

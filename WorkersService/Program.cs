@@ -1,6 +1,6 @@
 using Serilog;
+using WorkersService.Grpc;
 using WorkersService.IoC;
-using WorkersService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,20 +11,14 @@ builder
     .AddKafkaConsumer()
     .AddWorkerProgressNotifier()
     .AddTaskWorker();
-
+builder.Services.AddGrpc(options =>
+{
+    options.EnableDetailedErrors = true;
+});
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
 app.ConfigurePostgres();
-
-// Для демонстрации
-app.MapGet("/{id}", async (string id = "1") =>
-{
-    using var scope = app.Services.CreateScope();
-
-    var worker = scope.ServiceProvider.GetRequiredService<TaskWorker>();
-
-    await worker.ProcessTaskAsync(id);
-});
-
+app.MapGrpcService<TaskWorkerGrpcService>();
+app.MapGet("/check", () => "healthy");
 app.Run();

@@ -66,7 +66,7 @@ public class KafkaConsumerService : BackgroundService
                     _logger.LogInformation("Received task from Kafka. Partition: {Partition}, Offset: {Offset}",
                         consumeResult.Partition, consumeResult.Offset.Value);
 
-                    await ProcessMessageAsync(consumeResult.Message.Value);
+                    await ProcessMessageAsync(consumeResult.Message.Value, stoppingToken);
 
                     _consumer.Commit(consumeResult);
                 }
@@ -95,7 +95,7 @@ public class KafkaConsumerService : BackgroundService
         }
     }
     
-    private async Task ProcessMessageAsync(string messageJson)
+    private async Task ProcessMessageAsync(string messageJson, CancellationToken cancellationToken)
     {
         try
         {
@@ -115,7 +115,7 @@ public class KafkaConsumerService : BackgroundService
             {
                 TaskId = task.TaskId,
                 CreatedAt = task.CreatedAt,
-            });
+            }, cancellationToken);
         }
         catch (JsonException ex)
         {

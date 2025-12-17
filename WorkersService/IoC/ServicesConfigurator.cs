@@ -11,7 +11,7 @@ public static class ServicesConfigurator
         builder.Services.Configure<WorkerProgressNotifierOptions>(
             builder.Configuration.GetSection("WorkerProgressNotifier"));
         
-        builder.Services.AddSingleton<WorkerProgressNotifier>();
+        builder.Services.AddScoped<WorkerProgressNotifier>();
         
         return builder;
     }
