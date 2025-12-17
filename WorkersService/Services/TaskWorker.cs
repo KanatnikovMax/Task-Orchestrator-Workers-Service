@@ -1,11 +1,22 @@
-﻿namespace WorkersService.Services;
+﻿using WorkersService.Db.Repositories;
 
-public class TaskWorker(WorkerProgressNotifier progressNotifier, ILogger<TaskWorker> logger)
+namespace WorkersService.Services;
+
+public class TaskWorker(
+    WorkerProgressNotifier progressNotifier, 
+    ITasksRepository repository,
+    ILogger<TaskWorker> logger)
 {
     public async Task ProcessTaskAsync(string taskId)
     {
         try
         {
+            if (!await repository.TaskExistsAsync(taskId))
+            {
+                logger.LogInformation("Task {TaskId} doesn't exist", taskId);
+                return;
+            }
+            
             await progressNotifier.StartAsync();
             
             await progressNotifier.NotifyProgressAsync(taskId, 0);
@@ -21,6 +32,8 @@ public class TaskWorker(WorkerProgressNotifier progressNotifier, ILogger<TaskWor
             
             await Task.Delay(7000);
             await progressNotifier.NotifyProgressAsync(taskId, 100);
+            
+            await repository.DeleteTaskAsync(taskId);
             
             logger.LogInformation("Task {TaskId} completed successfully", taskId);
         }
